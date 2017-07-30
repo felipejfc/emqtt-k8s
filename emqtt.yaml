@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: emqtt
+  namespace: emqtt
+  labels:
+    app: emqtt
+spec:
+  ports:
+    - port: 1883
+      name: mqtt
+    - port: 8883
+      name: mqttssl
+    - port: 8080
+      name: mgmt
+    - port: 18083
+      name: dashboard
+    - port: 4369
+      name: mapping
+  clusterIP: None
+  selector:
+    app: emqtt
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: emqtt
+  namespace: emqtt
+spec:
+  replicas: 2
+  serviceName: emqtt
+  template:
+    metadata:
+      labels: 
+        app: emqtt
+    spec:
+      containers:
+      - name: emqtt
+        image: felipejfc/emqtt:v1
+        ports:
+          - containerPort: 1883
+          - containerPort: 8883
+          - containerPort: 8080
+          - containerPort: 18083
+          - containerPort: 4369
+          - containerPort: 4370
+          - containerPort: 6369
+          - containerPort: 6370
+          - containerPort: 6371
+          - containerPort: 6372
+          - containerPort: 6373
+          - containerPort: 6374
+          - containerPort: 6375
+          - containerPort: 6376
+          - containerPort: 6377
+          - containerPort: 6378
+        readinessProbe:
+          tcpSocket:
+            port: 1883
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        env:
+          - name: EMQ_NAME
+            value: "emqtt"
+          - name: EMQ_CLUSTER__DISCOVERY
+            value: "k8s"
+          - name: EMQ_CLUSTER__K8S__APISERVER
+            value: "https:\\/\\/kubernetes.default:443"
+          - name: EMQ_CLUSTER__K8S__SERVICE_NAME
+            value: "emqtt"
+          - name: EMQ_CLUSTER__K8S__ADDRESS_TYPE
+            value: "ip"
+          - name: EMQ_CLUSTER__K8S__APP_NAME
+            value: "emqtt"
+          - name: EMQ_NODE__COOKIE
+            value: "secretcookieeeetfggggg"
+          - name: EMQ_CLUSTER__NAME
+            value: "emqcl"
+          - name: EMQ_CLUSTER__AUTOHEAL
+            value: "on"
+          - name: EMQ_CLUSTER__AUTOCLEAN
+            value: "5m"
